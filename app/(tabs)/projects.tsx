@@ -5,17 +5,23 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   Modal,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/utils/api';
+import { colors } from '@/styles/colors';
 import { Project } from '@/types';
-import { X, Calendar, DollarSign } from 'lucide-react-native';
+import { X, Calendar, DollarSign, Briefcase, TrendingUp, CheckCircle } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function ProjectsScreen() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const insets = useSafeAreaInsets();
 
   const {
     data: projects,
@@ -44,67 +50,126 @@ export default function ProjectsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>My Projects</Text>
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={[colors.indigo, colors.purple]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.subtitle}>My Portfolio</Text>
+            <Text style={styles.title}>Projects</Text>
+          </View>
+          <View style={styles.projectCountBadge}>
+            <Briefcase size={18} color={colors.indigo} />
+            <Text style={styles.projectCountText}>
+              {projects?.length || 0}
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
 
       {isLoading && (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color={colors.indigo} />
+          <Text style={styles.loadingText}>Loading projects...</Text>
         </View>
       )}
 
       {error && (
         <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Failed to load projects</Text>
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>Failed to load projects</Text>
+            <Text style={styles.errorSubtext}>Please try again later</Text>
+          </View>
         </View>
       )}
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      {!isLoading && !error && (
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.contentContainer, { paddingBottom: Math.max(insets.bottom + 90, 100) }]}
+        >
         {projects?.map((project: Project) => (
           <TouchableOpacity
             key={project.id}
             style={styles.projectCard}
             onPress={() => setSelectedProject(project)}
+            activeOpacity={0.7}
           >
-            <View style={styles.projectHeader}>
-              <Text style={styles.projectName}>{project.name}</Text>
-              <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(project.status) },
-                ]}
-              >
-                <Text style={styles.statusText}>
-                  {getStatusLabel(project.status)}
-                </Text>
+            <View style={styles.projectCardGradient}>
+              <View style={styles.projectHeader}>
+                <View style={styles.projectIconContainer}>
+                  <LinearGradient
+                    colors={[colors.indigo, colors.purple]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.projectIconGradient}
+                  >
+                    <Briefcase size={24} color="#fff" strokeWidth={2.5} />
+                  </LinearGradient>
+                </View>
+                <View style={styles.projectHeaderText}>
+                  <Text style={styles.projectName}>{project.name}</Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusColor(project.status) + '20', borderColor: getStatusColor(project.status) },
+                    ]}
+                  >
+                    <Text style={[styles.statusText, { color: getStatusColor(project.status) }]}>
+                      {getStatusLabel(project.status)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.projectDetails}>
+                <View style={styles.detailItem}>
+                  <View style={styles.detailIconContainer}>
+                    <DollarSign size={16} color={colors.green} />
+                  </View>
+                  <View>
+                    <Text style={styles.detailLabel}>Loan Sanctioned</Text>
+                    <Text style={styles.detailValue}>
+                      ₹{project.loanSanctioned.toLocaleString('en-IN')}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.detailItem}>
+                  <View style={styles.detailIconContainer}>
+                    <TrendingUp size={16} color={colors.cyan} />
+                  </View>
+                  <View>
+                    <Text style={styles.detailLabel}>Disbursed</Text>
+                    <Text style={styles.detailValue}>
+                      ₹{project.disbursed.toLocaleString('en-IN')}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.viewDetailsContainer}>
+                <Text style={styles.viewDetails}>View Full Details</Text>
+                <Text style={styles.arrow}>→</Text>
               </View>
             </View>
-
-            <View style={styles.projectDetails}>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Loan Sanctioned</Text>
-                <Text style={styles.detailValue}>
-                  ₹{project.loanSanctioned.toLocaleString('en-IN')}
-                </Text>
-              </View>
-              <View style={styles.detailItem}>
-                <Text style={styles.detailLabel}>Disbursed</Text>
-                <Text style={styles.detailValue}>
-                  ₹{project.disbursed.toLocaleString('en-IN')}
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.viewDetails}>View Details →</Text>
           </TouchableOpacity>
         ))}
 
-        {projects?.length === 0 && !isLoading && (
-          <Text style={styles.emptyText}>No projects found</Text>
+        {projects?.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Briefcase size={48} color={colors.textLight} />
+            <Text style={styles.emptyText}>No projects found</Text>
+            <Text style={styles.emptySubtext}>Your projects will appear here</Text>
+          </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <Modal
         visible={!!selectedProject}
@@ -113,37 +178,56 @@ export default function ProjectsScreen() {
         onRequestClose={() => setSelectedProject(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <LinearGradient
+            colors={['#ffffff', colors.backgroundLight]}
+            style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) }]}
+          >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Project Details</Text>
-              <TouchableOpacity onPress={() => setSelectedProject(null)}>
-                <X size={24} color="#000" />
+              <TouchableOpacity 
+                onPress={() => setSelectedProject(null)}
+                style={styles.closeIconButton}
+              >
+                <X size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             {selectedProject && (
               <ScrollView style={styles.modalBody}>
-                <Text style={styles.modalProjectName}>
-                  {selectedProject.name}
-                </Text>
+                <View style={styles.modalProjectHeader}>
+                  <LinearGradient
+                    colors={[colors.indigo, colors.purple]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.modalProjectIcon}
+                  >
+                    <Briefcase size={32} color="#fff" strokeWidth={2.5} />
+                  </LinearGradient>
+                  <Text style={styles.modalProjectName}>
+                    {selectedProject.name}
+                  </Text>
+                </View>
                 <View
                   style={[
                     styles.statusBadge,
                     {
-                      backgroundColor: getStatusColor(selectedProject.status),
+                      backgroundColor: getStatusColor(selectedProject.status) + '20',
+                      borderColor: getStatusColor(selectedProject.status),
                       alignSelf: 'flex-start',
                       marginBottom: 24,
                     },
                   ]}
                 >
-                  <Text style={styles.statusText}>
+                  <Text style={[styles.statusText, { color: getStatusColor(selectedProject.status) }]}>
                     {getStatusLabel(selectedProject.status)}
                   </Text>
                 </View>
 
-                <View style={styles.infoCard}>
+                <View style={styles.infoCardsContainer}>
                   <View style={styles.infoRow}>
-                    <DollarSign size={20} color="#666" />
+                    <View style={styles.infoIconContainer}>
+                      <DollarSign size={18} color={colors.green} />
+                    </View>
                     <View style={styles.infoContent}>
                       <Text style={styles.infoLabel}>Loan Sanctioned</Text>
                       <Text style={styles.infoValue}>
@@ -153,7 +237,9 @@ export default function ProjectsScreen() {
                   </View>
 
                   <View style={styles.infoRow}>
-                    <DollarSign size={20} color="#666" />
+                    <View style={styles.infoIconContainer}>
+                      <TrendingUp size={18} color={colors.cyan} />
+                    </View>
                     <View style={styles.infoContent}>
                       <Text style={styles.infoLabel}>Disbursed Amount</Text>
                       <Text style={styles.infoValue}>
@@ -163,11 +249,17 @@ export default function ProjectsScreen() {
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Calendar size={20} color="#666" />
+                    <View style={styles.infoIconContainer}>
+                      <Calendar size={18} color={colors.indigo} />
+                    </View>
                     <View style={styles.infoContent}>
                       <Text style={styles.infoLabel}>Start Date</Text>
                       <Text style={styles.infoValue}>
-                        {new Date(selectedProject.startDate).toLocaleDateString()}
+                        {new Date(selectedProject.startDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
                       </Text>
                     </View>
                   </View>
@@ -179,103 +271,237 @@ export default function ProjectsScreen() {
               style={styles.closeButton}
               onPress={() => setSelectedProject(null)}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <LinearGradient
+                colors={[colors.indigo, colors.purple]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.closeButtonGradient}
+              >
+                <Text style={styles.closeButtonText}>Close</Text>
+              </LinearGradient>
             </TouchableOpacity>
-          </View>
+          </LinearGradient>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f4ff',
   },
   header: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    padding: 24,
+    paddingBottom: 32,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+    marginBottom: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#fff',
+  },
+  projectCountBadge: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  projectCountText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.indigo,
   },
   content: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 20,
+  },
+  contentContainer: {
+    paddingTop: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  errorCard: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   errorText: {
-    color: '#f00',
+    color: colors.error,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  errorSubtext: {
+    color: colors.textLight,
     fontSize: 14,
   },
   projectCard: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    marginBottom: 16,
+    borderRadius: 24,
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+    backgroundColor: '#fff',
+  },
+  projectCardGradient: {
+    padding: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(99, 102, 241, 0.15)',
+    borderRadius: 24,
+    backgroundColor: '#fff',
   },
   projectHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  projectIconContainer: {
+    marginRight: 14,
+  },
+  projectIconGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  projectHeaderText: {
+    flex: 1,
   },
   projectName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
-    flex: 1,
-    marginRight: 8,
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 8,
+    letterSpacing: -0.3,
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1.5,
+    alignSelf: 'flex-start',
   },
   statusText: {
-    color: '#fff',
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   projectDetails: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    gap: 16,
+    marginBottom: 16,
   },
   detailItem: {
     flex: 1,
+    backgroundColor: colors.backgroundLight,
+    padding: 14,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    // gap: 10,
+    // shadowColor: '#ff7171ff',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  detailIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(248, 243, 243, 0.06)',
   },
   detailLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 11,
+    color: colors.textLight,
     marginBottom: 4,
+    fontWeight: '600',
   },
   detailValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  viewDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 8,
+    gap: 6,
   },
   viewDetails: {
-    fontSize: 13,
-    color: '#000',
+    fontSize: 14,
+    color: colors.indigo,
+    fontWeight: '700',
+  },
+  arrow: {
+    fontSize: 18,
+    color: colors.indigo,
     fontWeight: '600',
-    textDecorationLine: 'underline',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    marginTop: 20,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#999',
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
     fontSize: 14,
-    marginTop: 24,
+    color: colors.textLight,
   },
   modalOverlay: {
     flex: 1,
@@ -283,11 +509,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 24,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -296,57 +521,95 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: colors.text,
+  },
+  closeIconButton: {
+    padding: 4,
   },
   modalBody: {
     flex: 1,
   },
-  modalProjectName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
+  modalProjectHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  infoCard: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+  modalProjectIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalProjectName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  infoCardsContainer: {
+    gap: 16,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  infoIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.backgroundLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
   },
   infoContent: {
-    marginLeft: 12,
     flex: 1,
   },
   infoLabel: {
     fontSize: 13,
-    color: '#666',
+    color: colors.textLight,
     marginBottom: 4,
+    fontWeight: '600',
   },
   infoValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
   },
   closeButton: {
-    backgroundColor: '#000',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
     marginTop: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  closeButtonGradient: {
+    padding: 18,
+    alignItems: 'center',
   },
   closeButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
 });

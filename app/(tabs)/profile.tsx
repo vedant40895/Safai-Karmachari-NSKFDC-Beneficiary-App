@@ -6,13 +6,16 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/utils/api';
+import { colors } from '@/styles/colors';
 import { validate } from '@/utils/validation';
 import {
   User,
@@ -25,11 +28,15 @@ import {
   LogOut,
   Edit3,
   Save,
+  UserCircle,
 } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout, updateUser } = useAuth();
+  const insets = useSafeAreaInsets();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -92,133 +99,186 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-        {!isEditing && (
-          <TouchableOpacity onPress={() => setIsEditing(true)}>
-            <Edit3 size={24} color="#000" />
-          </TouchableOpacity>
-        )}
-      </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={[colors.indigo, colors.purple]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.subtitle}>Account Settings</Text>
+            <Text style={styles.title}>Profile</Text>
+          </View>
+          {!isEditing && (
+            <TouchableOpacity 
+              onPress={() => setIsEditing(true)}
+              style={styles.editButton}
+            >
+              <Edit3 size={20} color="#fff" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 24 }]}
+      >
         <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
+          <LinearGradient
+            colors={[colors.indigo, colors.purple]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.avatar}
+          >
             <Text style={styles.avatarText}>
               {user?.name?.charAt(0).toUpperCase()}
             </Text>
-          </View>
+          </LinearGradient>
           <Text style={styles.userName}>{user?.name}</Text>
-          <Text style={styles.userPhone}>{user?.phone}</Text>
+          <View style={styles.phoneContainer}>
+            <Phone size={14} color={colors.textSecondary} />
+            <Text style={styles.userPhone}>{user?.phone}</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <User size={20} color="#666" />
-              <Text style={styles.label}>Full Name</Text>
-            </View>
-            {isEditing ? (
-              <View>
-                <TextInput
-                  style={[styles.input, errors.name && styles.inputError]}
-                  value={formData.name}
-                  onChangeText={(text) => handleInputChange('name', text)}
-                  placeholder="Enter your name"
-                />
-                {errors.name && (
-                  <Text style={styles.errorText}>{errors.name}</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <User size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Full Name</Text>
+                {isEditing ? (
+                  <View>
+                    <TextInput
+                      style={[styles.input, errors.name && styles.inputError]}
+                      value={formData.name}
+                      onChangeText={(text) => handleInputChange('name', text)}
+                      placeholder="Enter your name"
+                      placeholderTextColor={colors.textLight}
+                    />
+                    {errors.name && (
+                      <Text style={styles.errorText}>{errors.name}</Text>
+                    )}
+                  </View>
+                ) : (
+                  <Text style={styles.value}>{user?.name || '-'}</Text>
                 )}
               </View>
-            ) : (
-              <Text style={styles.value}>{user?.name || '-'}</Text>
-            )}
+            </View>
           </View>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <Phone size={20} color="#666" />
-              <Text style={styles.label}>Phone Number</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <Phone size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Phone Number</Text>
+                <Text style={styles.value}>{user?.phone}</Text>
+              </View>
             </View>
-            <Text style={styles.value}>{user?.phone}</Text>
           </View>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <Mail size={20} color="#666" />
-              <Text style={styles.label}>Email</Text>
-            </View>
-            {isEditing ? (
-              <View>
-                <TextInput
-                  style={[styles.input, errors.email && styles.inputError]}
-                  value={formData.email}
-                  onChangeText={(text) => handleInputChange('email', text)}
-                  placeholder="Enter your email"
-                  keyboardType="email-address"
-                />
-                {errors.email && (
-                  <Text style={styles.errorText}>{errors.email}</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <Mail size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Email</Text>
+                {isEditing ? (
+                  <View>
+                    <TextInput
+                      style={[styles.input, errors.email && styles.inputError]}
+                      value={formData.email}
+                      onChangeText={(text) => handleInputChange('email', text)}
+                      placeholder="Enter your email"
+                      placeholderTextColor={colors.textLight}
+                      keyboardType="email-address"
+                    />
+                    {errors.email && (
+                      <Text style={styles.errorText}>{errors.email}</Text>
+                    )}
+                  </View>
+                ) : (
+                  <Text style={styles.value}>{user?.email || '-'}</Text>
                 )}
               </View>
-            ) : (
-              <Text style={styles.value}>{user?.email || '-'}</Text>
-            )}
+            </View>
           </View>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <MapPin size={20} color="#666" />
-              <Text style={styles.label}>Address</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <MapPin size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Address</Text>
+                {isEditing ? (
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={formData.address}
+                    onChangeText={(text) => handleInputChange('address', text)}
+                    placeholder="Enter your address"
+                    placeholderTextColor={colors.textLight}
+                    multiline
+                    numberOfLines={3}
+                  />
+                ) : (
+                  <Text style={styles.value}>{user?.address || '-'}</Text>
+                )}
+              </View>
             </View>
-            {isEditing ? (
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={formData.address}
-                onChangeText={(text) => handleInputChange('address', text)}
-                placeholder="Enter your address"
-                multiline
-                numberOfLines={3}
-              />
-            ) : (
-              <Text style={styles.value}>{user?.address || '-'}</Text>
-            )}
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account Details</Text>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <FileText size={20} color="#666" />
-              <Text style={styles.label}>Aadhaar</Text>
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <FileText size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Aadhaar</Text>
+                <Text style={styles.value}>
+                  {user?.aadhaar
+                    ? `XXXX XXXX ${user.aadhaar.slice(-4)}`
+                    : 'Not linked'}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.value}>
-              {user?.aadhaar
-                ? `XXXX XXXX ${user.aadhaar.slice(-4)}`
-                : 'Not linked'}
-            </Text>
           </View>
 
-          <View style={styles.infoGroup}>
-            <View style={styles.iconLabel}>
-              <CreditCard size={20} color="#666" />
-              <Text style={styles.label}>Bank Account</Text>
-            </View>
-            <View style={styles.statusContainer}>
-              <Text style={styles.value}>
-                {user?.bankLinked ? 'Linked' : 'Not Linked'}
-              </Text>
-              <View
-                style={[
-                  styles.statusDot,
-                  user?.bankLinked && styles.statusDotActive,
-                ]}
-              />
+          <View style={styles.infoCard}>
+            <View style={styles.infoGroup}>
+              <View style={styles.iconContainer}>
+                <CreditCard size={18} color={colors.indigo} />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.label}>Bank Account</Text>
+                <View style={styles.statusContainer}>
+                  <Text style={styles.value}>
+                    {user?.bankLinked ? 'Linked' : 'Not Linked'}
+                  </Text>
+                  <View
+                    style={[
+                      styles.statusDot,
+                      user?.bankLinked && styles.statusDotActive,
+                    ]}
+                  />
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -230,14 +290,21 @@ export default function ProfileScreen() {
               onPress={handleSave}
               disabled={isSaving}
             >
-              {isSaving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Save size={20} color="#fff" />
-                  <Text style={styles.buttonText}>Save Changes</Text>
-                </>
-              )}
+              <LinearGradient
+                colors={[colors.indigo, colors.purple]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                {isSaving ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Save size={20} color="#fff" />
+                    <Text style={styles.buttonText}>Save Changes</Text>
+                  </>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.cancelButton}
@@ -270,194 +337,262 @@ export default function ProfileScreen() {
               style={[styles.actionButton, styles.logoutButton]}
               onPress={handleLogout}
             >
-              <LogOut size={20} color="#f00" />
-              <Text style={[styles.actionText, styles.logoutText]}>
+              {/* <LogOut size={20} color="#f00" /> */}
+              {/* <Text style={[styles.actionText, styles.logoutText]}>
                 Logout
-              </Text>
+              </Text> */}
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f4ff',
   },
   header: {
+    padding: 24,
+    paddingBottom: 32,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+    marginBottom: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#fff',
+  },
+  editButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
   },
+  contentContainer: {
+    paddingTop: 20,
+  },
   avatarContainer: {
     alignItems: 'center',
     paddingVertical: 32,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 24,
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#000',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
   },
   avatarText: {
     color: '#fff',
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: 'bold',
   },
   userName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 4,
+    color: colors.text,
+    marginBottom: 8,
+  },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   userPhone: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
   section: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 16,
+    color: colors.text,
+    marginBottom: 12,
+  },
+  infoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: 'hidden',
   },
   infoGroup: {
-    marginBottom: 20,
-  },
-  iconLabel: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.indigoLight,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    marginRight: 14,
+  },
+  infoContent: {
+    flex: 1,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#666',
+    color: colors.textLight,
+    marginBottom: 6,
   },
   value: {
     fontSize: 15,
-    color: '#000',
-    marginLeft: 28,
+    fontWeight: '600',
+    color: colors.text,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
+    borderRadius: 12,
     padding: 12,
     fontSize: 15,
-    color: '#000',
-    marginLeft: 28,
+    color: colors.text,
+    backgroundColor: colors.backgroundLight,
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
   inputError: {
-    borderColor: '#f00',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#f00',
+    color: colors.error,
     fontSize: 12,
     marginTop: 4,
-    marginLeft: 28,
+    fontWeight: '600',
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginLeft: 28,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ccc',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.textLight,
   },
   statusDotActive: {
-    backgroundColor: '#4caf50',
+    backgroundColor: colors.success,
   },
   editActions: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     gap: 12,
   },
   button: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  buttonGradient: {
     flexDirection: 'row',
-    backgroundColor: '#000',
-    padding: 16,
-    borderRadius: 8,
+    padding: 18,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  buttonDisabled: {
-    backgroundColor: '#666',
-  },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
   cancelButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: colors.backgroundLight,
+    padding: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
   },
   cancelButtonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: '700',
   },
   actions: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     gap: 12,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    padding: 18,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: colors.borderLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   logoutButton: {
-    backgroundColor: '#fff',
-    borderColor: '#f00',
+    borderColor: '#f0f4ff',
+    backgroundColor: '#f0f4ff',
   },
   actionText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: colors.text,
   },
   logoutText: {
-    color: '#f00',
+    color: colors.error,
   },
 });

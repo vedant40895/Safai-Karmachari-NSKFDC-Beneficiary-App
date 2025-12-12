@@ -1,26 +1,43 @@
 import { Tabs } from 'expo-router';
-import {
-  Home,
-  Users,
-  Briefcase,
-  FileText,
-  DollarSign,
-  MessageSquare,
-  GraduationCap,
-  User,
-} from 'lucide-react-native';
+import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { Home, Users, Briefcase, FileText, User } from 'lucide-react-native';
+import { colors } from '@/styles/colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const TAB_BAR_MARGIN = SCREEN_WIDTH > 400 ? 20 : 12;
+const ICON_SIZE = SCREEN_WIDTH > 400 ? 22 : 20;
+const ICON_CONTAINER_SIZE = SCREEN_WIDTH > 400 ? 44 : 40;
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: '#fff',
+        tabBarInactiveTintColor: colors.textLight,
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#e0e0e0',
+          borderTopWidth: 0,
+          height: Platform.OS === 'ios' ? 68 : 60,
+          paddingBottom: Platform.OS === 'ios' ? 16 : 10,
+          paddingTop: 10,
+          paddingHorizontal: 8,
+          elevation: 20,
+          shadowColor: colors.indigo,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 16,
+          borderRadius: 28,
+          position: 'absolute',
+          left: TAB_BAR_MARGIN,
+          right: TAB_BAR_MARGIN,
+          bottom: Platform.OS === 'ios' ? 12 : 8,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 0,
+          paddingHorizontal: 0,
+          flex: 1,
         },
       }}
     >
@@ -28,22 +45,51 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && styles.iconContainerActive,
+              ]}
+            >
+              <Home size={ICON_SIZE} color={color} strokeWidth={focused ? 2.5 : 2} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="shg"
         options={{
           title: 'My SHG',
-          tabBarIcon: ({ size, color }) => <Users size={size} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && styles.iconContainerActive,
+              ]}
+            >
+              <Users size={ICON_SIZE} color={color} strokeWidth={focused ? 2.5 : 2} />
+            </View>
+          ),
         }}
       />
       <Tabs.Screen
         name="projects"
         options={{
           title: 'Projects',
-          tabBarIcon: ({ size, color }) => (
-            <Briefcase size={size} color={color} />
+          tabBarIcon: ({ focused, color }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && styles.iconContainerActive,
+              ]}
+            >
+              <Briefcase
+                size={ICON_SIZE}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
+            </View>
           ),
         }}
       />
@@ -51,8 +97,19 @@ export default function TabLayout() {
         name="schemes"
         options={{
           title: 'Schemes',
-          tabBarIcon: ({ size, color }) => (
-            <FileText size={size} color={color} />
+          tabBarIcon: ({ focused, color }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && styles.iconContainerActive,
+              ]}
+            >
+              <FileText
+                size={ICON_SIZE}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
+            </View>
           ),
         }}
       />
@@ -60,9 +117,32 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ size, color }) => <User size={size} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && styles.iconContainerActive,
+              ]}
+            >
+              <User size={ICON_SIZE} color={color} strokeWidth={focused ? 2.5 : 2} />
+            </View>
+          ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    width: ICON_CONTAINER_SIZE,
+    height: ICON_CONTAINER_SIZE,
+    borderRadius: ICON_CONTAINER_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  iconContainerActive: {
+    backgroundColor: colors.indigo,
+  },
+});

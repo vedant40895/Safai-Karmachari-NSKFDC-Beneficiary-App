@@ -9,10 +9,14 @@ import {
   ActivityIndicator,
   Modal,
   Alert,
+  Dimensions,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/api';
+import { colors } from '@/styles/colors';
 import { TrainingModule } from '@/types';
 import {
   Play,
@@ -21,7 +25,11 @@ import {
   Download,
   X,
   Award,
+  ArrowLeft,
+  GraduationCap,
 } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 const MOCK_QUIZ = {
   questions: [
@@ -41,6 +49,8 @@ const MOCK_QUIZ = {
 };
 
 export default function TrainingScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [selectedModule, setSelectedModule] = useState<TrainingModule | null>(
     null
@@ -106,32 +116,55 @@ export default function TrainingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: 'Training', headerShown: true }} />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={[colors.indigo, colors.purple]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 20, paddingBottom: 40 }]}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.subtitle}>Skill Development</Text>
+            <Text style={styles.title}>Training Modules</Text>
+          </View>
+          <View style={styles.iconContainer}>
+            <GraduationCap size={32} color="#fff" strokeWidth={2.5} />
+          </View>
+        </View>
+      </LinearGradient>
 
       {isLoading && (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#000" />
+          <ActivityIndicator size="large" color={colors.indigo} />
         </View>
       )}
 
       {error && (
         <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Failed to load training modules</Text>
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>Failed to load training modules</Text>
+            <Text style={styles.errorSubtext}>Please try again later</Text>
+          </View>
         </View>
       )}
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Training Modules</Text>
-
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: Math.max(insets.bottom, 24) + 24 }]}
+      >
         {modules?.map((module: TrainingModule) => (
           <View key={module.id} style={styles.moduleCard}>
             <View style={styles.moduleHeader}>
-              <View style={styles.iconContainer}>
+              <View style={styles.moduleStatusIcon}>
                 {module.completed ? (
-                  <CheckCircle size={24} color="#4caf50" />
+                  <CheckCircle size={26} color={colors.success} strokeWidth={2.5} />
                 ) : (
-                  <Clock size={24} color="#666" />
+                  <Clock size={26} color={colors.indigo} strokeWidth={2.5} />
                 )}
               </View>
               <View style={styles.moduleInfo}>
@@ -267,208 +300,279 @@ export default function TrainingScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f4ff',
+  },
+  header: {
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
-    padding: 16,
+  },
+  contentContainer: {
+    padding: 24,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 24,
+  },
+  errorCard: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   errorText: {
-    color: '#f00',
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.error,
+    marginBottom: 4,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 16,
+  errorSubtext: {
+    fontSize: 14,
+    color: colors.textLight,
   },
   moduleCard: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
     position: 'relative',
   },
   moduleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#e0e0e0',
+  moduleStatusIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.indigoLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   moduleInfo: {
     flex: 1,
+    paddingRight: 100,
   },
   moduleTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.text,
     marginBottom: 4,
   },
   moduleDuration: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: colors.textLight,
+    fontWeight: '500',
   },
   moduleDescription: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 12,
+    color: colors.textSecondary,
+    lineHeight: 21,
+    marginBottom: 16,
   },
   moduleActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     flexWrap: 'wrap',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    backgroundColor: colors.indigoLight,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.indigo,
   },
   downloadButton: {
-    backgroundColor: '#000',
-    borderColor: '#000',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   actionButtonText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#000',
+    color: colors.indigo,
   },
   downloadText: {
     color: '#fff',
   },
   completedBadge: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: '#4caf50',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    top: 20,
+    right: 20,
+    backgroundColor: colors.success,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+    shadowColor: colors.success,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   completedText: {
     color: '#fff',
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
   },
   emptyText: {
     textAlign: 'center',
-    color: '#999',
-    fontSize: 14,
-    marginTop: 24,
+    color: colors.textLight,
+    fontSize: 15,
+    marginTop: 40,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     padding: 24,
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 24,
+    padding: 28,
     maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.text,
   },
   quizProgress: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
   progressText: {
     fontSize: 14,
-    color: '#666',
+    color: colors.textLight,
+    fontWeight: '500',
   },
   questionText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 24,
-    lineHeight: 26,
+    fontSize: 19,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 28,
+    lineHeight: 28,
   },
   optionsContainer: {
-    gap: 12,
+    gap: 14,
   },
   optionButton: {
-    padding: 16,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    padding: 18,
+    backgroundColor: colors.indigoLight,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: colors.indigo,
   },
   optionText: {
     fontSize: 15,
-    color: '#000',
+    fontWeight: '500',
+    color: colors.text,
   },
   resultContainer: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 28,
   },
   resultTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 20,
+    marginBottom: 10,
   },
   resultScore: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 16,
+    fontSize: 48,
+    fontWeight: '800',
+    color: colors.success,
+    marginBottom: 20,
   },
   resultMessage: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 32,
+    paddingHorizontal: 20,
   },
   closeButton: {
-    backgroundColor: '#000',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: colors.indigo,
+    paddingHorizontal: 40,
+    paddingVertical: 14,
+    borderRadius: 12,
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   closeButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

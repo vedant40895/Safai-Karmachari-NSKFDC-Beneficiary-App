@@ -6,19 +6,24 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
   Platform,
   Switch,
+  Dimensions,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '@/styles/colors';
 import { validate } from '@/utils/validation';
 import { api } from '@/utils/api';
 import { storage } from '@/utils/storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { Camera, MapPin, X, CheckCircle, Image as ImageIcon } from 'lucide-react-native';
+import { Camera, MapPin, X, CheckCircle, Image as ImageIcon, MessageSquare } from 'lucide-react-native';
+
+const { width } = Dimensions.get('window');
 
 const CATEGORIES = [
   'Sanitation Issues',
@@ -31,6 +36,7 @@ const CATEGORIES = [
 
 export default function NewComplaintScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -167,37 +173,73 @@ export default function NewComplaintScreen() {
 
   if (submitted) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <Stack.Screen options={{ title: 'Raise a Voice' }} />
         <View style={styles.successContainer}>
-          <CheckCircle size={64} color="#000" />
-          <Text style={styles.successTitle}>Complaint Submitted!</Text>
-          <Text style={styles.successMessage}>
-            Your complaint has been registered. You can track its status in the
-            Track Complaints section.
-          </Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push('/complaints/track' as any)}
+          <LinearGradient
+            colors={[colors.successBg, colors.backgroundLight]}
+            style={styles.successCard}
           >
-            <Text style={styles.buttonText}>Track Complaints</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.secondaryButtonText}>Back to Home</Text>
-          </TouchableOpacity>
+            <View style={styles.successIconContainer}>
+              <CheckCircle size={64} color={colors.success} strokeWidth={2} />
+            </View>
+            <Text style={styles.successTitle}>Complaint Submitted!</Text>
+            <Text style={styles.successMessage}>
+              Your complaint has been registered. You can track its status in the
+              Track Complaints section.
+            </Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => router.push('/complaints/track' as any)}
+            >
+              <LinearGradient
+                colors={[colors.indigo, colors.purple]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                <Text style={styles.buttonText}>Track Complaints</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.secondaryButtonText}>Back to Home</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ title: 'Raise a Voice', headerShown: true }} />
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Submit a Complaint</Text>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Stack.Screen options={{ title: 'Raise a Voice', headerShown: false }} />
+      
+      {/* Gradient Header */}
+      <LinearGradient
+        colors={[colors.indigo, colors.purple]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.subtitle}>Raise Your Voice</Text>
+            <Text style={styles.headerTitle}>Submit Complaint</Text>
+          </View>
+          <View style={styles.complaintIconContainer}>
+            <MessageSquare size={24} color="#fff" strokeWidth={2.5} />
+          </View>
+        </View>
+      </LinearGradient>
+
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: insets.bottom + 24 }]}
+      >
 
         <View style={styles.section}>
           <Text style={styles.label}>Category *</Text>
@@ -316,93 +358,148 @@ export default function NewComplaintScreen() {
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Submit Complaint</Text>
-          )}
+          <LinearGradient
+            colors={[colors.indigo, colors.purple]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.buttonGradient}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Submit Complaint</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f4ff',
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  complaintIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
-    padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 24,
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   section: {
     marginBottom: 24,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 12,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#e8ecff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   categoryButtonActive: {
-    backgroundColor: '#000',
-    borderColor: '#000',
+    backgroundColor: colors.indigo,
+    borderColor: colors.indigo,
   },
   categoryText: {
     fontSize: 13,
-    color: '#000',
-    fontWeight: '500',
+    color: colors.text,
+    fontWeight: '600',
   },
   categoryTextActive: {
     color: '#fff',
   },
   textArea: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#e8ecff',
+    borderRadius: 16,
+    padding: 16,
     fontSize: 15,
-    color: '#000',
-    minHeight: 120,
+    color: colors.text,
+    minHeight: 140,
     textAlignVertical: 'top',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   inputError: {
-    borderColor: '#f00',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#f00',
+    color: colors.error,
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 8,
+    fontWeight: '500',
   },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   helperText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 13,
+    color: colors.textLight,
+    marginTop: 8,
   },
   mediaButtons: {
     flexDirection: 'row',
@@ -414,93 +511,132 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: `${colors.indigo}30`,
+    borderStyle: 'dashed',
   },
   mediaButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#000',
+    color: colors.indigo,
   },
   mediaList: {
     marginTop: 12,
-    gap: 8,
+    gap: 10,
   },
   mediaItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#f8f9ff',
+    padding: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#e8ecff',
   },
   mediaName: {
     flex: 1,
     fontSize: 14,
-    color: '#000',
+    color: colors.text,
+    fontWeight: '500',
     marginRight: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
   locationText: {
     flex: 1,
     fontSize: 13,
-    color: '#666',
+    color: colors.textLight,
+    lineHeight: 18,
   },
   button: {
-    backgroundColor: '#000',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginTop: 8,
     marginBottom: 16,
+    shadowColor: colors.indigo,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonGradient: {
+    padding: 18,
+    alignItems: 'center',
   },
   buttonDisabled: {
-    backgroundColor: '#666',
+    opacity: 0.6,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   secondaryButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    padding: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderWidth: 2,
+    borderColor: colors.indigo,
+    marginTop: 12,
   },
   secondaryButtonText: {
-    color: '#000',
+    color: colors.indigo,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   successContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 20,
+  },
+  successCard: {
+    width: width - 40,
+    padding: 32,
+    borderRadius: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  successIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: `${colors.success}20`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   successTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 12,
   },
   successMessage: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    color: colors.textLight,
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 32,
   },
 });

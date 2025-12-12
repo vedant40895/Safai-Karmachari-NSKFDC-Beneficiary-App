@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '@/utils/api';
 import { storage } from '@/utils/storage';
 import * as Location from 'expo-location';
@@ -28,6 +29,7 @@ const WORK_TYPES = [
 export default function AttendanceScreen() {
   const queryClient = useQueryClient();
   const [location, setLocation] = useState<any>(null);
+  const insets = useSafeAreaInsets();
   const [selectedWorkType, setSelectedWorkType] = useState('');
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
@@ -165,7 +167,7 @@ export default function AttendanceScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Stack.Screen options={{ title: 'Attendance', headerShown: true }} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -308,7 +310,7 @@ export default function AttendanceScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -506,3 +508,4 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 });
+
