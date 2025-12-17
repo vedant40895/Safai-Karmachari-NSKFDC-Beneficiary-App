@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/utils/api';
 import { colors } from '@/styles/colors';
 import { Project } from '@/types';
-import { X, Calendar, DollarSign, Briefcase, TrendingUp, CheckCircle } from 'lucide-react-native';
+import { X, Calendar, DollarSign, Briefcase, TrendingUp, CheckCircle, ArrowLeft, FileText, Users, Package, IndianRupee, Wallet, MessageSquare } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -193,7 +193,7 @@ export default function ProjectsScreen() {
             </View>
 
             {selectedProject && (
-              <ScrollView style={styles.modalBody}>
+              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                 <View style={styles.modalProjectHeader}>
                   <LinearGradient
                     colors={[colors.indigo, colors.purple]}
@@ -224,12 +224,26 @@ export default function ProjectsScreen() {
                 </View>
 
                 <View style={styles.infoCardsContainer}>
+                  {selectedProject.schemeLinked && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <FileText size={18} color={colors.indigo} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Scheme Linked</Text>
+                        <Text style={styles.infoValue}>
+                          {selectedProject.schemeLinked}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
                   <View style={styles.infoRow}>
                     <View style={styles.infoIconContainer}>
                       <DollarSign size={18} color={colors.green} />
                     </View>
                     <View style={styles.infoContent}>
-                      <Text style={styles.infoLabel}>Loan Sanctioned</Text>
+                      <Text style={styles.infoLabel}>Loan Amount Sanctioned</Text>
                       <Text style={styles.infoValue}>
                         ₹{selectedProject.loanSanctioned.toLocaleString('en-IN')}
                       </Text>
@@ -248,6 +262,76 @@ export default function ProjectsScreen() {
                     </View>
                   </View>
 
+                  {selectedProject.workStatus && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <CheckCircle size={18} color={selectedProject.workStatus === 'Completed' ? colors.success : colors.warning} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Work Status</Text>
+                        <Text style={[styles.infoValue, { color: selectedProject.workStatus === 'Completed' ? colors.success : colors.warning }]}>
+                          {selectedProject.workStatus}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedProject.assetsDeployed && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <Package size={18} color={colors.purple} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Assets Deployed</Text>
+                        <Text style={styles.infoValue}>
+                          {selectedProject.assetsDeployed}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedProject.manpowerUtilized && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <Users size={18} color={colors.indigo} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Manpower Utilized</Text>
+                        <Text style={styles.infoValue}>
+                          {selectedProject.manpowerUtilized} Members
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedProject.paymentReceived !== undefined && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <IndianRupee size={18} color={colors.green} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Payment Received from Govt</Text>
+                        <Text style={styles.infoValue}>
+                          ₹{selectedProject.paymentReceived.toLocaleString('en-IN')}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedProject.salaryPaid !== undefined && (
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconContainer}>
+                        <Wallet size={18} color={colors.cyan} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Salary Paid to Members</Text>
+                        <Text style={styles.infoValue}>
+                          ₹{selectedProject.salaryPaid.toLocaleString('en-IN')}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
                   <View style={styles.infoRow}>
                     <View style={styles.infoIconContainer}>
                       <Calendar size={18} color={colors.indigo} />
@@ -263,6 +347,20 @@ export default function ProjectsScreen() {
                       </Text>
                     </View>
                   </View>
+
+                  {selectedProject.remarks && (
+                    <View style={[styles.infoRow, styles.remarksRow]}>
+                      <View style={styles.infoIconContainer}>
+                        <MessageSquare size={18} color={colors.purple} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Remarks</Text>
+                        <Text style={styles.remarksText}>
+                          {selectedProject.remarks}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
                 </View>
               </ScrollView>
             )}
@@ -277,7 +375,8 @@ export default function ProjectsScreen() {
                 end={{ x: 1, y: 0 }}
                 style={styles.closeButtonGradient}
               >
-                <Text style={styles.closeButtonText}>Close</Text>
+                <ArrowLeft size={20} color="#fff" strokeWidth={2.5} />
+                <Text style={styles.closeButtonText}>Go Back</Text>
               </LinearGradient>
             </TouchableOpacity>
           </LinearGradient>
@@ -513,12 +612,13 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     padding: 24,
     maxHeight: '85%',
+    flex: 1,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   modalTitle: {
     fontSize: 24,
@@ -530,6 +630,7 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     flex: 1,
+    marginBottom: 16,
   },
   modalProjectHeader: {
     alignItems: 'center',
@@ -604,12 +705,25 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   closeButtonGradient: {
+    flexDirection: 'row',
     padding: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   closeButtonText: {
     color: '#fff',
     fontSize: 17,
     fontWeight: '700',
+  },
+  remarksRow: {
+    alignItems: 'flex-start',
+  },
+  remarksText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginTop: 4,
   },
 });

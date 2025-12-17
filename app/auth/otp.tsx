@@ -41,7 +41,7 @@ export default function OTPVerificationScreen() {
       // Set mock user data
       await storage.user.setData({
         id: '1',
-        name: 'Admin User',
+        name: 'NSKC  User',
         phone: phone || '1234567890',
         email: 'test@example.com',
         address: 'Kolkata',

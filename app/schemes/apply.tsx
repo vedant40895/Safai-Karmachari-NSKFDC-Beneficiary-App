@@ -473,8 +473,6 @@ export default function ApplySchemeScreen() {
     </View>
   );
 }
-  
-
 
 const styles = StyleSheet.create({
   container: {
@@ -482,9 +480,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f4ff',
   },
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 32,
+    paddingBottom: 20,
     // borderBottomLeftRadius: 32,
     // borderBottomRightRadius: 32,
   },

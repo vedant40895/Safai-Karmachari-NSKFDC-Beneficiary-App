@@ -333,15 +333,15 @@ export default function ProfileScreen() {
               <Text style={styles.actionText}>Settings</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, styles.logoutButton]}
-              onPress={handleLogout}
+            <View
+              style={[styles.logoutButton]}
+              // onPress={handleLogout}
             >
               {/* <LogOut size={20} color="#f00" /> */}
               {/* <Text style={[styles.actionText, styles.logoutText]}>
                 Logout
               </Text> */}
-            </TouchableOpacity>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -582,6 +582,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    marginBottom: 16,
   },
   logoutButton: {
     borderColor: '#f0f4ff',

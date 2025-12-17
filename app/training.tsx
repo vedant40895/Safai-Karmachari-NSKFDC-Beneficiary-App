@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    // borderBottomLeftRadius: 32,
+    // borderBottomRightRadius: 32,
     shadowColor: colors.indigo,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,

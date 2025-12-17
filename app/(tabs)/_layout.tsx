@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Users, Briefcase, FileText, User } from 'lucide-react-native';
 import { colors } from '@/styles/colors';
 
@@ -9,6 +10,8 @@ const ICON_SIZE = SCREEN_WIDTH > 400 ? 22 : 20;
 const ICON_CONTAINER_SIZE = SCREEN_WIDTH > 400 ? 44 : 40;
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tabs
       screenOptions={{
@@ -20,7 +23,7 @@ export default function TabLayout() {
           backgroundColor: '#fff',
           borderTopWidth: 0,
           height: Platform.OS === 'ios' ? 68 : 60,
-          paddingBottom: Platform.OS === 'ios' ? 16 : 10,
+          paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) : Math.max(insets.bottom, 10),
           paddingTop: 10,
           paddingHorizontal: 8,
           elevation: 20,
@@ -32,7 +35,7 @@ export default function TabLayout() {
           position: 'absolute',
           left: TAB_BAR_MARGIN,
           right: TAB_BAR_MARGIN,
-          bottom: Platform.OS === 'ios' ? 12 : 8,
+          bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 12) : Math.max(insets.bottom, 8),
         },
         tabBarItemStyle: {
           paddingVertical: 0,

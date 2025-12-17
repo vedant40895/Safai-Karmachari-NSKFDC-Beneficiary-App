@@ -15,6 +15,12 @@ export interface SHGMember {
   phone: string;
   role: string;
   joinedDate: string;
+  age?: number;
+  gender?: string;
+  caste?: string;
+  aadhaar?: string;
+  trainingStatus?: string;
+  bankAccountLinked?: boolean;
 }
 
 export interface Project {
@@ -24,6 +30,13 @@ export interface Project {
   loanSanctioned: number;
   disbursed: number;
   startDate: string;
+  schemeLinked?: string;
+  workStatus?: 'Ongoing' | 'Completed';
+  assetsDeployed?: string;
+  manpowerUtilized?: number;
+  paymentReceived?: number;
+  salaryPaid?: number;
+  remarks?: string;
 }
 
 export interface Scheme {
@@ -51,6 +64,15 @@ export interface Loan {
   interestRate: number;
   emi: number;
   nextDueDate: string;
+  assetsDeployed?: string;
+  manpowerUtilized?: number;
+  salaryPaid?: number;
+  bankLinked?: boolean;
+  repaymentSchedule?: Array<{
+    date: string;
+    amount: number;
+    status: 'paid' | 'pending' | 'overdue';
+  }>;
 }
 
 export interface Complaint {

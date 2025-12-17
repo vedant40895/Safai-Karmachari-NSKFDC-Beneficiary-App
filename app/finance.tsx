@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/utils/api';
 import { colors } from '@/styles/colors';
 import { Loan } from '@/types';
-import { DollarSign, Calendar, TrendingDown, ArrowLeft, Wallet, CreditCard } from 'lucide-react-native';
+import { DollarSign, Calendar, TrendingDown, ArrowLeft, Wallet, CreditCard, Package, Users, IndianRupee, CheckCircle, Plus, Edit } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -48,8 +48,16 @@ export default function FinanceScreen() {
             <Text style={styles.title}>My Finances</Text>
           </View>
           
-          <View style={styles.iconContainer}>
-            <Wallet size={32} color="#fff" strokeWidth={2.5} />
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.manualEntryButton}
+              onPress={() => router.push('/finance/manual-entry' as any)}
+            >
+              <Plus size={20} color="#fff" strokeWidth={2.5} />
+            </TouchableOpacity>
+            <View style={styles.iconContainer}>
+              <Wallet size={28} color="#fff" strokeWidth={2.5} />
+            </View>
           </View>
         </View>
       </LinearGradient>
@@ -91,45 +99,128 @@ export default function FinanceScreen() {
                 <Text style={styles.loanAmount}>
                   ₹{loan.amount.toLocaleString('en-IN')}
                 </Text>
+                <Text style={styles.loanSubtitle}>Loan Sanctioned</Text>
               </View>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.loanDetails}>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Disbursed Amount</Text>
-                <Text style={styles.detailValue}>
-                  ₹{loan.disbursed.toLocaleString('en-IN')}
-                </Text>
+              <View style={styles.detailRowWithIcon}>
+                <View style={styles.detailIconBadge}>
+                  <IndianRupee size={16} color={colors.green} strokeWidth={2.5} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Amount Received</Text>
+                  <Text style={styles.detailValue}>
+                    ₹{loan.disbursed.toLocaleString('en-IN')}
+                  </Text>
+                </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Outstanding Balance</Text>
-                <Text style={styles.detailValueHighlight}>
-                  ₹{loan.balance.toLocaleString('en-IN')}
-                </Text>
+              {loan.assetsDeployed && (
+                <View style={styles.detailRowWithIcon}>
+                  <View style={styles.detailIconBadge}>
+                    <Package size={16} color={colors.purple} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>Assets Deployed</Text>
+                    <Text style={styles.detailValue}>{loan.assetsDeployed}</Text>
+                  </View>
+                </View>
+              )}
+
+              {loan.manpowerUtilized !== undefined && (
+                <View style={styles.detailRowWithIcon}>
+                  <View style={styles.detailIconBadge}>
+                    <Users size={16} color={colors.indigo} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>Manpower Utilized</Text>
+                    <Text style={styles.detailValue}>{loan.manpowerUtilized} Members</Text>
+                  </View>
+                </View>
+              )}
+
+              {loan.salaryPaid !== undefined && (
+                <View style={styles.detailRowWithIcon}>
+                  <View style={styles.detailIconBadge}>
+                    <Wallet size={16} color={colors.cyan} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>Salary Paid to Members</Text>
+                    <Text style={styles.detailValue}>
+                      ₹{loan.salaryPaid.toLocaleString('en-IN')}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              <View style={styles.detailRowWithIcon}>
+                <View style={styles.detailIconBadge}>
+                  <TrendingDown size={16} color={colors.indigo} strokeWidth={2.5} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Balance Loan</Text>
+                  <Text style={styles.detailValueHighlight}>
+                    ₹{loan.balance.toLocaleString('en-IN')}
+                  </Text>
+                </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Interest Rate</Text>
-                <Text style={styles.detailValue}>{loan.interestRate}% p.a.</Text>
+              <View style={styles.detailRowWithIcon}>
+                <View style={styles.detailIconBadge}>
+                  <DollarSign size={16} color={colors.warning} strokeWidth={2.5} />
+                </View>
+                <View style={styles.detailContent}>
+                  <Text style={styles.detailLabel}>Monthly EMI</Text>
+                  <Text style={styles.detailValue}>
+                    ₹{loan.emi.toLocaleString('en-IN')}
+                  </Text>
+                </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Monthly EMI</Text>
-                <Text style={styles.detailValue}>
-                  ₹{loan.emi.toLocaleString('en-IN')}
-                </Text>
-              </View>
+              {loan.bankLinked !== undefined && (
+                <View style={styles.bankStatusRow}>
+                  <View style={styles.detailIconBadge}>
+                    <CreditCard size={16} color={loan.bankLinked ? colors.success : colors.error} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.detailContent}>
+                    <Text style={styles.detailLabel}>Bank Linked</Text>
+                    <View style={styles.bankStatusContainer}>
+                      <Text style={[styles.detailValue, { color: loan.bankLinked ? colors.success : colors.error }]}>
+                        {loan.bankLinked ? 'Yes' : 'No'}
+                      </Text>
+                      <View style={[styles.statusDot, { backgroundColor: loan.bankLinked ? colors.success : colors.error }]} />
+                    </View>
+                  </View>
+                </View>
+              )}
             </View>
 
             <View style={styles.nextDue}>
-              <Calendar size={16} color="#666" />
+              <Calendar size={16} color={colors.warningText} strokeWidth={2.5} />
               <Text style={styles.nextDueText}>
-                Next Due: {new Date(loan.nextDueDate).toLocaleDateString()}
+                Next Due: {new Date(loan.nextDueDate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
               </Text>
             </View>
+
+            {loan.repaymentSchedule && loan.repaymentSchedule.length > 0 && (
+              <TouchableOpacity
+                style={styles.viewScheduleButton}
+                onPress={() => {
+                  // Navigate to repayment schedule detail
+                  alert('View detailed repayment schedule');
+                }}
+              >
+                <Text style={styles.viewScheduleText}>View Repayment Schedule</Text>
+                <TrendingDown size={16} color={colors.indigo} strokeWidth={2.5} />
+              </TouchableOpacity>
+            )}
           </View>
         ))}
 
@@ -166,8 +257,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
+    // borderBottomLeftRadius: 32,
+    // borderBottomRightRadius: 32,
     shadowColor: colors.indigo,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -192,6 +283,19 @@ const styles = StyleSheet.create({
   },
   headerTextContainer: {
     flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  manualEntryButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   iconContainer: {
     width: 56,
@@ -272,6 +376,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.text,
   },
+  loanSubtitle: {
+    fontSize: 12,
+    color: colors.textLight,
+    fontWeight: '500',
+    marginTop: 2,
+  },
   divider: {
     height: 1,
     backgroundColor: colors.borderLight,
@@ -279,6 +389,58 @@ const styles = StyleSheet.create({
   },
   loanDetails: {
     gap: 14,
+  },
+  detailRowWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  detailIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.backgroundLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  detailContent: {
+    flex: 1,
+    flexDirection: 'column',
+    gap: 4,
+  },
+  bankStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingTop: 6,
+  },
+  bankStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  viewScheduleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 14,
+    backgroundColor: colors.indigoLight,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.indigo,
+  },
+  viewScheduleText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.indigo,
   },
   detailRow: {
     flexDirection: 'row',
@@ -294,6 +456,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: colors.text,
+    flexWrap: 'wrap',
   },
   detailValueHighlight: {
     fontSize: 16,

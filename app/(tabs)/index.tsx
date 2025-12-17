@@ -53,13 +53,13 @@ export default function HomeScreen() {
       color: colors.indigo,
       bgColor: colors.indigoLight,
     },
-    {
-      icon: Briefcase,
-      label: 'My Projects',
-      route: '/projects',
-      color: colors.purple,
-      bgColor: colors.purpleLight,
-    },
+    // {
+    //   icon: Briefcase,
+    //   label: 'My Projects',
+    //   route: '/projects',
+    //   color: colors.purple,
+    //   bgColor: colors.purpleLight,
+    // },
     {
       icon: FileText,
       label: 'Apply Scheme',
@@ -87,6 +87,13 @@ export default function HomeScreen() {
       route: '/training',
       color: colors.cyan,
       bgColor: colors.cyanLight,
+    },
+    {
+      icon: Clock,
+      label: 'Track Complaints',
+      route: '/projects',
+      color: colors.purple,
+      bgColor: colors.purpleLight,
     },
   ];
 
